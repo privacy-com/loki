@@ -1,0 +1,71 @@
+name: Create JIRA Ticket for Dependabot PR
+
+# INSTRUCTIONS: 
+#  1. Copy this template to the repo's .github/workflow/dependabot-to-jira.yml
+#  2. Replace the JIRA_PROJECT_KEY env variable with the correct PROJECT_KEY
+env:
+  JIRA_PROJECT_KEY: EN 
+
+on:
+  pull_request_target:
+    types: [opened]
+    paths:
+      # JavaScript/Node.js
+      - 'package.json'
+      - '**/package.json'
+      - 'package-lock.json'
+      - '**/package-lock.json'
+      - 'yarn.lock'
+      - '**/yarn.lock'
+      - 'pnpm-lock.yaml'
+      - '**/pnpm-lock.yaml'
+      # Python
+      - 'requirements.txt'
+      - '**/requirements.txt'
+      - 'requirements/*.txt'
+      - '**/requirements/*.txt'
+      - 'setup.py'
+      - '**/setup.py'
+      - 'pyproject.toml'
+      - '**/pyproject.toml'
+      - 'poetry.lock'
+      - '**/poetry.lock'
+      - 'Pipfile'
+      - '**/Pipfile'
+      - 'Pipfile.lock'
+      - '**/Pipfile.lock'
+      # Java/Kotlin
+      - 'pom.xml'
+      - '**/pom.xml'
+      - 'build.gradle'
+      - '**/build.gradle'
+      - 'build.gradle.kts'
+      - '**/build.gradle.kts'
+      - 'gradle.lockfile'
+      - '**/gradle.lockfile'
+      - 'gradle/dependency-locks/*.lockfile'
+      - '**/gradle/dependency-locks/*.lockfile'
+      # Rust
+      - 'Cargo.toml'
+      - '**/Cargo.toml'
+      - 'Cargo.lock'
+      - '**/Cargo.lock'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Existing Pull Request Number (for testing)'
+        required: true
+        type: number
+
+jobs:
+  create-jira:
+    if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'              
+    uses: privacy-com/lithic-internal-actions/.github/workflows/dependabot-to-jira-sync.yml@main
+    with:
+      pr_number: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+      repository: ${{ github.repository }}
+      project_key: ${{ JIRA_PROJECT_KEY }}
+    secrets:
+      DEPENDABOT_JIRA_API_TOKEN: ${{ secrets.DEPENDABOT_JIRA_API_TOKEN }}
+
+
